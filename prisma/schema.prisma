@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Device {
+  id          String              @id @default(cuid())
+  deviceId    String              @unique
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  sessions    AttendanceSession[]
+  logs        AttendanceLog[]
+}
+
+model AttendanceSession {
+  id         String        @id @default(cuid())
+  deviceRef  String
+  device     Device        @relation(fields: [deviceRef], references: [id], onDelete: Cascade)
+  checkInAt  DateTime
+  checkOutAt DateTime?
+  checkInIp  String
+  checkOutIp String?
+  status     SessionStatus @default(ACTIVE)
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@index([deviceRef, status])
+}
+
+model AttendanceLog {
+  id            String         @id @default(cuid())
+  deviceId      String
+  deviceRef     String?
+  device        Device?        @relation(fields: [deviceRef], references: [id], onDelete: SetNull)
+  action        AttendanceAction
+  occurredAt    DateTime       @default(now())
+  ip            String
+  networkStatus NetworkStatus
+  details       String?
+
+  @@index([deviceId, occurredAt])
+}
+
+enum SessionStatus {
+  ACTIVE
+  CLOSED
+}
+
+enum AttendanceAction {
+  CHECK_IN
+  CHECK_OUT
+  STATUS
+}
+
+enum NetworkStatus {
+  VALID
+  SUSPICIOUS
+}
