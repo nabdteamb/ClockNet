@@ -12,6 +12,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
+    "seed": "prisma db seed",
     "test:security": "node tests/stress-test.js",
     "test:db": "node tests/db-analysis.js",
     "test:load": "k6 run tests/load-test.k6.js -e BASE_URL=http://localhost:3000",
