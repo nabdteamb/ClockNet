@@ -7,6 +7,20 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model AdminUser {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String   // bcrypt hashed
+  name      String
+  role      AdminRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  lastLogin DateTime?
+
+  @@index([email])
+}
+
 model Device {
   id          String              @id @default(cuid())
   deviceId    String              @unique
@@ -14,6 +28,7 @@ model Device {
   updatedAt   DateTime            @updatedAt
   sessions    AttendanceSession[]
   logs        AttendanceLog[]
+  auditLogs   AuditLog[]
 }
 
 model AttendanceSession {
@@ -24,11 +39,14 @@ model AttendanceSession {
   checkOutAt DateTime?
   checkInIp  String
   checkOutIp String?
+  checkInUserAgent String?
+  checkOutUserAgent String?
   status     SessionStatus @default(ACTIVE)
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
 
   @@index([deviceRef, status])
+  @@index([checkInAt, checkOutAt])
 }
 
 model AttendanceLog {
@@ -43,6 +61,37 @@ model AttendanceLog {
   details       String?
 
   @@index([deviceId, occurredAt])
+  @@index([ip, occurredAt])
+}
+
+model AuditLog {
+  id              String         @id @default(cuid())
+  deviceId        String
+  deviceRef       String?
+  device          Device?        @relation(fields: [deviceRef], references: [id], onDelete: SetNull)
+  eventType       AuditEventType
+  severity        AuditSeverity  @default(INFO)
+  description     String
+  ip              String
+  userAgent       String?
+  fingerprint     String?
+  attemptCount    Int            @default(1)
+  isBlocked       Boolean        @default(false)
+  metadata        String?        // JSON field for additional data
+  resolvedAt      DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([deviceId, createdAt])
+  @@index([eventType, severity])
+  @@index([ip, createdAt])
+  @@index([isBlocked, createdAt])
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+  ANALYST
 }
 
 enum SessionStatus {
@@ -59,4 +108,21 @@ enum AttendanceAction {
 enum NetworkStatus {
   VALID
   SUSPICIOUS
+}
+
+enum AuditEventType {
+  INVALID_IP
+  DUPLICATE_REQUEST
+  REPLAY_ATTEMPT
+  BLOCKED_REQUEST
+  ANOMALOUS_PATTERN
+  RATE_LIMIT_EXCEEDED
+  DEVICE_FINGERPRINT_MISMATCH
+  UNUSUAL_TIME
+}
+
+enum AuditSeverity {
+  INFO
+  WARNING
+  CRITICAL
 }
