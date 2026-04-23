@@ -10,6 +10,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Ensure public exists even if not in host
+RUN mkdir -p public
 # Generate Prisma Client
 RUN npx prisma generate
 # Build Next.js
