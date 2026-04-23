@@ -16,6 +16,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - clocknet-network
 
   app:
     build:
@@ -31,6 +33,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - clocknet-network
+
+networks:
+  clocknet-network:
+    driver: bridge
 
 volumes:
   clocknet-postgres-data:
