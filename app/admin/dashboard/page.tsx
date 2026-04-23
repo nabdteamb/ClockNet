@@ -1,19 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import styles from "./dashboard.module.css";
-import StatCard from "@/components/admin/stat-card";
+
 import ActivityFeed from "@/components/admin/activity-feed";
+import StatCard from "@/components/admin/stat-card";
+
+import styles from "./dashboard.module.css";
 
 interface DashboardStats {
   stats: {
-    totalDevices: number;
-    activeUsers: number;
+    totalEmployees: number;
+    assignedDevices: number;
+    activeNow: number;
     todayCheckIns: number;
-    activeSessions: number;
     recentCriticalEvents: number;
   };
-  peakHours: Array<{ hour: number; count: number }>;
 }
 
 export default function AdminDashboard() {
@@ -26,8 +28,11 @@ export default function AdminDashboard() {
       try {
         setLoading(true);
         const res = await fetch("/api/admin/dashboard/stats");
-        if (!res.ok) throw new Error("Failed to fetch stats");
-        const json = await res.json();
+        if (!res.ok) {
+          throw new Error("Failed to fetch stats");
+        }
+
+        const json = (await res.json()) as DashboardStats;
         setData(json);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load dashboard");
@@ -36,16 +41,16 @@ export default function AdminDashboard() {
       }
     };
 
-    fetchStats();
-    const interval = setInterval(fetchStats, 10000); // Refresh every 10 seconds
+    void fetchStats();
+    const interval = setInterval(fetchStats, 10000);
     return () => clearInterval(interval);
   }, []);
 
   if (loading) {
     return (
       <div className={styles.container}>
-        <h1 className={styles.title}>Dashboard</h1>
-        <div className={styles.loading}>Loading...</div>
+        <h1 className={styles.title}>لوحة تحكم الحضور</h1>
+        <div className={styles.loading}>جاري تحميل لوحة التحكم...</div>
       </div>
     );
   }
@@ -53,90 +58,60 @@ export default function AdminDashboard() {
   if (error || !data) {
     return (
       <div className={styles.container}>
-        <h1 className={styles.title}>Dashboard</h1>
-        <div className={styles.error}>{error || "Failed to load dashboard"}</div>
+        <h1 className={styles.title}>لوحة تحكم الحضور</h1>
+        <div className={styles.error}>{error || "فشل في تحميل لوحة التحكم"}</div>
       </div>
     );
   }
 
-  const { stats, peakHours } = data;
+  const { stats } = data;
 
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <div>
-          <h1 className={styles.title}>Dashboard</h1>
-          <p className={styles.subtitle}>Real-time Attendance Monitoring</p>
+        <div className={styles.headerIntro}>
+          <h1 className={styles.title}>لوحة تحكم الحضور</h1>
+          <p className={styles.subtitle}>
+            عرض حي لتواجد الموظفين، الأجهزة المرتبطة، ونشاط الحضور.
+          </p>
         </div>
-        <div className={styles.timestamp}>
-          Last updated: {new Date().toLocaleTimeString()}
+
+        <div className={styles.headerSide}>
+          <div className={styles.headerActions}>
+            <Link href="/admin/devices" className={styles.primaryAction}>
+              موظف
+            </Link>
+          </div>
         </div>
       </header>
 
-      {/* Stats Cards */}
       <section className={styles.statsGrid}>
+        <StatCard title="إجمالي الموظفين" value={stats.totalEmployees} icon="EMP" />
+        <StatCard title="الأجهزة المسندة" value={stats.assignedDevices} icon="DEV" />
         <StatCard
-          title="Total Devices"
-          value={stats.totalDevices}
-          icon="📱"
-          trend={null}
+          title="نشط الآن"
+          value={stats.activeNow}
+          icon="NOW"
+          highlight={stats.activeNow > 0}
         />
         <StatCard
-          title="Currently Active"
-          value={stats.activeUsers}
-          icon="✓"
-          trend={null}
-          highlight={stats.activeUsers > 0}
-        />
-        <StatCard
-          title="Check-ins Today"
-          value={stats.todayCheckIns}
-          icon="📊"
-          trend={null}
-        />
-        <StatCard
-          title="Critical Events"
+          title="أحداث حرجة"
           value={stats.recentCriticalEvents}
-          icon="🚨"
+          icon="SEC"
           warning={stats.recentCriticalEvents > 0}
         />
       </section>
 
-      {/* Activity Feed */}
       <section className={styles.activitySection}>
         <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>Live Activity</h2>
+          <h2 className={styles.sectionTitle}>الحضور الحالي</h2>
           <div className={styles.liveIndicator}>
             <span className={styles.liveDot}></span>
-            Live
+            مباشر
           </div>
         </div>
         <ActivityFeed />
       </section>
-
-      {/* Peak Hours Chart */}
-      {peakHours.length > 0 && (
-        <section className={styles.chartSection}>
-          <div className={styles.sectionHeader}>
-            <h2 className={styles.sectionTitle}>Check-in Distribution by Hour</h2>
-          </div>
-          <div className={styles.chart}>
-            {peakHours.map((hour) => (
-              <div key={hour.hour} className={styles.chartBar}>
-                <div className={styles.barContainer}>
-                  <div
-                    className={styles.bar}
-                    style={{
-                      height: `${(hour.count / Math.max(...peakHours.map((h) => h.count), 1)) * 100}%`,
-                    }}
-                  ></div>
-                </div>
-                <div className={styles.barLabel}>{hour.hour}:00</div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

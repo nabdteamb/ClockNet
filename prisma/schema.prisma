@@ -24,17 +24,43 @@ model AdminUser {
 model Device {
   id          String              @id @default(cuid())
   deviceId    String              @unique
+  alias       String?
+  employeeRef String?             @unique
+  employee    Employee?           @relation(fields: [employeeRef], references: [id], onDelete: SetNull)
+  lastKnownIp String?
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
   sessions    AttendanceSession[]
   logs        AttendanceLog[]
   auditLogs   AuditLog[]
+
+  @@index([employeeRef])
+}
+
+model Employee {
+  id           String              @id @default(cuid())
+  employeeCode String              @unique
+  fullName     String
+  department   String?
+  title        String?
+  allowedIp    String?
+  isActive     Boolean             @default(true)
+  notes        String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  device       Device?
+  sessions     AttendanceSession[]
+
+  @@index([employeeCode])
+  @@index([fullName])
 }
 
 model AttendanceSession {
   id         String        @id @default(cuid())
   deviceRef  String
   device     Device        @relation(fields: [deviceRef], references: [id], onDelete: Cascade)
+  employeeRef String?
+  employee    Employee?    @relation(fields: [employeeRef], references: [id], onDelete: SetNull)
   checkInAt  DateTime
   checkOutAt DateTime?
   checkInIp  String
@@ -46,6 +72,7 @@ model AttendanceSession {
   updatedAt  DateTime      @updatedAt
 
   @@index([deviceRef, status])
+  @@index([employeeRef, checkInAt])
   @@index([checkInAt, checkOutAt])
 }
 

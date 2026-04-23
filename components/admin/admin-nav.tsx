@@ -28,10 +28,10 @@ export default function AdminNav() {
     <nav className={styles.nav}>
       <div className={styles.header}>
         <div className={styles.logo}>
-          <div className={styles.logoIcon}>◆</div>
+          <div className={styles.logoIcon}>CN</div>
           <div className={styles.logoText}>
             <div className={styles.logoBrand}>ClockNet</div>
-            <div className={styles.logoSub}>Admin</div>
+            <div className={styles.logoSub}>الإدارة</div>
           </div>
         </div>
       </div>
@@ -42,26 +42,7 @@ export default function AdminNav() {
             href="/admin/dashboard"
             className={`${styles.menuItem} ${isActive("/admin/dashboard") ? styles.active : ""}`}
           >
-            <span className={styles.icon}>📊</span>
-            <span className={styles.label}>Dashboard</span>
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/admin/devices"
-            className={`${styles.menuItem} ${isActive("/admin/devices") ? styles.active : ""}`}
-          >
-            <span className={styles.icon}>📱</span>
-            <span className={styles.label}>Devices</span>
-          </Link>
-        </li>
-        <li>
-          <Link
-            href="/admin/attendance"
-            className={`${styles.menuItem} ${isActive("/admin/attendance") ? styles.active : ""}`}
-          >
-            <span className={styles.icon}>✓</span>
-            <span className={styles.label}>Attendance</span>
+            <span className={styles.label}>لوحة المتابعة</span>
           </Link>
         </li>
         <li>
@@ -69,8 +50,7 @@ export default function AdminNav() {
             href="/admin/logs"
             className={`${styles.menuItem} ${isActive("/admin/logs") ? styles.active : ""}`}
           >
-            <span className={styles.icon}>🔐</span>
-            <span className={styles.label}>Audit Logs</span>
+            <span className={styles.label}>السجلات</span>
           </Link>
         </li>
       </ul>
@@ -81,8 +61,7 @@ export default function AdminNav() {
           disabled={isLoggingOut}
           className={styles.logoutButton}
         >
-          <span className={styles.icon}>→</span>
-          <span className={styles.label}>{isLoggingOut ? "..." : "Logout"}</span>
+          <span className={styles.label}>{isLoggingOut ? "..." : "تسجيل الخروج"}</span>
         </button>
       </div>
     </nav>

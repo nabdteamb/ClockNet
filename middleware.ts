@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-import { getRequestIp, isCompanyIp } from "@/lib/network";
+import { getSourceIp, isCompanyIp } from "@/lib/network";
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -32,7 +32,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  const ip = getRequestIp(request.headers);
+  const ip = getSourceIp(request.headers);
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-clocknet-ip", ip);
   requestHeaders.set("x-clocknet-network-valid", String(isCompanyIp(ip)));
@@ -56,4 +56,3 @@ export const config = {
     "/((?!_next/static|_next/image|favicon.ico|__server_sent_events__).)*",
   ],
 };
-

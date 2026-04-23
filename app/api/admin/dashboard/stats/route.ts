@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+
 import { jsonError } from "@/lib/http";
+import { prisma } from "@/lib/prisma";
 import { verifySession } from "@/lib/session";
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
-    // Verify admin session
     const session = await verifySession();
     if (!session) {
       return jsonError("Unauthorized", 401);
@@ -17,30 +17,21 @@ export async function GET(request: NextRequest) {
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
-    // Get statistics
-    const [
-      totalDevices,
-      activeUsers,
-      todayCheckIns,
-      activeSessions,
-      recentAuditEvents,
-    ] = await Promise.all([
-      // Total devices registered
-      prisma.device.count(),
-
-      // Currently active sessions (checked in but not checked out today)
+    const [totalEmployees, assignedDevices, activeNow, todayCheckIns, recentCriticalEvents] =
+      await Promise.all([
+      prisma.employee.count(),
+      prisma.device.count({
+        where: {
+          employeeRef: {
+            not: null,
+          },
+        },
+      }),
       prisma.attendanceSession.count({
         where: {
-          checkInAt: {
-            gte: today,
-            lt: tomorrow,
-          },
-          checkOutAt: null,
           status: "ACTIVE",
         },
       }),
-
-      // Total check-ins today
       prisma.attendanceSession.count({
         where: {
           checkInAt: {
@@ -49,15 +40,6 @@ export async function GET(request: NextRequest) {
           },
         },
       }),
-
-      // All active sessions (anytime)
-      prisma.attendanceSession.count({
-        where: {
-          status: "ACTIVE",
-        },
-      }),
-
-      // Recent critical audit events
       prisma.auditLog.count({
         where: {
           severity: "CRITICAL",
@@ -68,37 +50,14 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    // Get peak hours (check-ins per hour today)
-    const peakHours = await prisma.attendanceSession.findMany({
-      where: {
-        checkInAt: {
-          gte: today,
-          lt: tomorrow,
-        },
-      },
-      select: {
-        checkInAt: true,
-      },
-    });
-
-    const hourlyBreakdown: Record<number, number> = {};
-    peakHours.forEach((session) => {
-      const hour = new Date(session.checkInAt).getHours();
-      hourlyBreakdown[hour] = (hourlyBreakdown[hour] || 0) + 1;
-    });
-
     return NextResponse.json({
       stats: {
-        totalDevices,
-        activeUsers,
+        totalEmployees,
+        assignedDevices,
+        activeNow,
         todayCheckIns,
-        activeSessions,
-        recentCriticalEvents: recentAuditEvents,
+        recentCriticalEvents,
       },
-      peakHours: Object.entries(hourlyBreakdown).map(([hour, count]) => ({
-        hour: parseInt(hour),
-        count,
-      })),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to fetch stats";

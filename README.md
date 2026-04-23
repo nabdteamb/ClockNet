@@ -1,6 +1,6 @@
 # ClockNet
 
-Simple network-based attendance MVP with no authentication.
+Network-restricted attendance system for company use.
 
 ## Stack
 
@@ -30,3 +30,11 @@ Simple network-based attendance MVP with no authentication.
 - `POST /api/attendance/check-in`
 - `POST /api/attendance/check-out`
 - `POST /api/attendance/status`
+
+## Employee flow
+
+- Admin creates employees from `/admin/devices`
+- Each employee gets a unique employee code such as `EMP001`
+- The first successful check-in from a company IP binds the current device to that employee
+- Each employee is limited to one approved device at a time
+- Company IP validation is controlled through `COMPANY_FIXED_IPS` and `COMPANY_IP_RANGES`

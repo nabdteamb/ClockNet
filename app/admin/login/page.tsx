@@ -25,29 +25,29 @@ export default function AdminLogin() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.message || "Login failed");
+        throw new Error(data.message || "فشل تسجيل الدخول");
       }
 
       router.push("/admin/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "فشل تسجيل الدخول");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={styles.loginContainer}>
+    <div className={styles.loginContainer} dir="rtl">
       <div className={styles.loginPanel}>
-        <h1 className={styles.title}>ClockNet Admin</h1>
-        <p className={styles.subtitle}>Attendance Management System</p>
+        <h1 className={styles.title}>مدير كلوك نت</h1>
+        <p className={styles.subtitle}>نظام إدارة الحضور</p>
 
         {error && <div className={styles.error}>{error}</div>}
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <div className={styles.formGroup}>
             <label htmlFor="email" className={styles.label}>
-              Email
+              البريد الإلكتروني
             </label>
             <input
               id="email"
@@ -63,7 +63,7 @@ export default function AdminLogin() {
 
           <div className={styles.formGroup}>
             <label htmlFor="password" className={styles.label}>
-              Password
+              كلمة المرور
             </label>
             <input
               id="password"
@@ -78,13 +78,13 @@ export default function AdminLogin() {
           </div>
 
           <button type="submit" className={styles.submitButton} disabled={loading}>
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
           </button>
         </form>
 
         <div className={styles.footer}>
           <p className={styles.footerText}>
-            ClockNet v1.0 • Admin Dashboard
+            كلوك نت v1.0 • لوحة تحكم المدير
           </p>
         </div>
       </div>

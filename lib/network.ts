@@ -45,23 +45,27 @@ function isIpInCidr(ip: string, cidr: string): boolean {
   return (ipInt & mask) === (rangeInt & mask);
 }
 
-export function getRequestIp(headers: Headers): string {
-  const forwardedFor = headers.get("x-forwarded-for");
-  if (forwardedFor) {
-    return normalizeIp(forwardedFor.split(",")[0] ?? "");
-  }
-
+export function getSourceIp(headers: Headers): string {
   const realIp = headers.get("x-real-ip");
   if (realIp) {
     return normalizeIp(realIp);
   }
 
+  const forwardedFor = headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    return normalizeIp(forwardedFor.split(",")[0] ?? "");
+  }
+
+  return "";
+}
+
+export function getRequestIp(headers: Headers): string {
   const middlewareIp = headers.get("x-clocknet-ip");
   if (middlewareIp) {
     return normalizeIp(middlewareIp);
   }
 
-  return "";
+  return getSourceIp(headers);
 }
 
 export function isCompanyIp(ip: string): boolean {

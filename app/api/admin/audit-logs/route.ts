@@ -37,7 +37,9 @@ export async function GET(request: NextRequest) {
 
     if (deviceId) {
       where.device = {
-        deviceId,
+        is: {
+          deviceId,
+        },
       };
     }
 
@@ -45,7 +47,7 @@ export async function GET(request: NextRequest) {
       where.ip = ip;
     }
 
-    if (isBlocked !== null) {
+    if (isBlocked === "true" || isBlocked === "false") {
       where.isBlocked = isBlocked === "true";
     }
 

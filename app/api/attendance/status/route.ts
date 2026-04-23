@@ -6,6 +6,8 @@ import { jsonError } from "@/lib/http";
 import { getRequestIp } from "@/lib/network";
 import { parseFingerprint } from "@/lib/validation";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const fingerprint = await parseFingerprint(request);

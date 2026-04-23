@@ -21,17 +21,36 @@ async function main() {
     },
   });
 
-  console.log("✓ Created default admin user");
+  console.log("Created default admin user");
   console.log({
     email: adminUser.email,
     name: adminUser.name,
     role: adminUser.role,
   });
 
-  console.log("\n⚠️  IMPORTANT: Change the default password on first login!");
+  await prisma.employee.upsert({
+    where: { employeeCode: "EMP001" },
+    update: {},
+    create: {
+      employeeCode: "EMP001",
+      fullName: "Demo Employee",
+      department: "Operations",
+      title: "Attendance Pilot",
+      isActive: true,
+    },
+  });
+
+  console.log("Created sample employee record");
+  console.log({
+    employeeCode: "EMP001",
+    fullName: "Demo Employee",
+  });
+
+  console.log("\nIMPORTANT: Change the default password on first login.");
   console.log("Default credentials:");
   console.log("  Email: admin@clocknet.local");
   console.log("  Password: admin123456");
+  console.log("  Sample employee code: EMP001");
   console.log("\nLogin at: http://localhost:3000/admin/login");
 }
 
